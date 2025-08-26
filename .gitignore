@@ -1,0 +1,16 @@
+node_modules
+.claude
+.claude-collective
+.taskmaster
+coverage
+distnode_modules/
+dist/
+
+# Test artifacts and generated files
+test-artifacts/
+test-images/
+test-images-overlay/
+*.png
+*.jpg
+*.jpeg
+vmaf_*.json

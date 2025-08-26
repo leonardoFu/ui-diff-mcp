@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "ui-diff": {
+      "command": "node",
+      "args": ["./dist/index.js"],
+      "env": {
+        "NODE_ENV": "production"
+      }
+    }
+  }
+}
