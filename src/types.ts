@@ -56,6 +56,15 @@ export const RenderOverlayInputSchema = z.object({
   regions: z.array(RegionSchema)
 });
 
+export const ComputeDiffWithAlignmentInputSchema = z.object({
+  target_path: z.string(),
+  current_path: z.string(),
+  alignment_method: z.enum(['auto', 'phase_correlation', 'ecc', 'feature_matching']).default('auto'),
+  pixelmatch_threshold: z.number().min(0).max(1).default(0.1),
+  min_region_area: z.number().int().min(0).default(64),
+  disable_alignment: z.boolean().default(false)
+});
+
 // TypeScript types
 export type Region = z.infer<typeof RegionSchema>;
 export type Canvas = z.infer<typeof CanvasSchema>;
@@ -66,3 +75,4 @@ export type ScoreGlobalResponse = z.infer<typeof ScoreGlobalResponseSchema>;
 export type ComputeDiffRegionsInput = z.infer<typeof ComputeDiffRegionsInputSchema>;
 export type ScoreGlobalInput = z.infer<typeof ScoreGlobalInputSchema>;
 export type RenderOverlayInput = z.infer<typeof RenderOverlayInputSchema>;
+export type ComputeDiffWithAlignmentInput = z.infer<typeof ComputeDiffWithAlignmentInputSchema>;

@@ -7,10 +7,12 @@ import {
 import { computeDiffRegions } from './tools/compute-diff-regions.js';
 import { scoreGlobal } from './tools/score-global.js';
 import { renderOverlay } from './tools/render-overlay.js';
+import { computeDiffWithAlignment } from './tools/compute-diff-with-alignment.js';
 import { 
   ComputeDiffRegionsInputSchema,
   ScoreGlobalInputSchema,
-  RenderOverlayInputSchema 
+  RenderOverlayInputSchema,
+  ComputeDiffWithAlignmentInputSchema
 } from './types.js';
 
 /**
@@ -116,6 +118,48 @@ export function createServer(): Server {
             },
             required: ['current_path', 'regions']
           }
+        },
+        {
+          name: 'compute_diff_with_alignment',
+          description: 'Enhanced UI diff comparison with OpenCV global shift detection and automatic image alignment. Handles images of different sizes and positions.',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              target_path: { 
+                type: 'string', 
+                description: 'Path to the target/reference image (design)' 
+              },
+              current_path: { 
+                type: 'string', 
+                description: 'Path to the current implementation image' 
+              },
+              alignment_method: {
+                type: 'string',
+                enum: ['auto', 'phase_correlation', 'ecc', 'feature_matching'],
+                default: 'auto',
+                description: 'Alignment method to use (auto selects best method)'
+              },
+              pixelmatch_threshold: {
+                type: 'number',
+                minimum: 0,
+                maximum: 1,
+                default: 0.1,
+                description: 'Threshold for pixelmatch difference detection'
+              },
+              min_region_area: {
+                type: 'integer',
+                minimum: 0,
+                default: 64,
+                description: 'Minimum area in pixels for a region to be included'
+              },
+              disable_alignment: {
+                type: 'boolean',
+                default: false,
+                description: 'Disable alignment preprocessing (use for identical-sized images)'
+              }
+            },
+            required: ['target_path', 'current_path']
+          }
         }
       ]
     };
@@ -161,6 +205,19 @@ export function createServer(): Server {
               {
                 type: 'text',
                 text: `Overlay image created at: ${overlayPath}`
+              }
+            ]
+          };
+        }
+
+        case 'compute_diff_with_alignment': {
+          const input = ComputeDiffWithAlignmentInputSchema.parse(args);
+          const result = await computeDiffWithAlignment(input);
+          return {
+            content: [
+              {
+                type: 'text',
+                text: JSON.stringify(result, null, 2)
               }
             ]
           };
