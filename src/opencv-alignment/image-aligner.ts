@@ -327,7 +327,8 @@ except Exception as e:
   ): Promise<DesignCentricAlignmentResult> {
     const {
       preserveDesign = true,
-      designImageIndex = 0
+      designImageIndex = 0,
+      confidenceThreshold = 0.7
     } = strategy || {};
 
     // Determine which image is design vs implementation
@@ -347,28 +348,25 @@ except Exception as e:
     let result: DesignCentricAlignmentResult;
 
     if (recommendation.action === 'no_alignment') {
-      // No transformation needed, but still apply design-centric positioning
-      await fs.copyFile(implementationImagePath, alignedImplementationPath);
-      
-      const implDimensions = await this.getImageDimensions(implementationImagePath);
-      
-      result = {
-        alignedDesignPath: designImagePath, // Original design path
-        alignedImplementationPath,
-        designDimensions,
-        finalCanvasDimensions: designDimensions, // Design defines canvas size
-        designPreserved: true,
-        transformationApplied: false,
-        paddingApplied: implDimensions.width < designDimensions.width || implDimensions.height < designDimensions.height,
-        croppingApplied: implDimensions.width > designDimensions.width || implDimensions.height > designDimensions.height
-      };
-    } else {
-      // Apply design-centric transformation (this should always happen when preserveDesign is true)
+      // Even with no alignment detected, we still need to transform implementation to match design dimensions
+      // when preserve_design is true
       result = await this.transformImplementationToDesignSpace(
         designImagePath,
         implementationImagePath,
         shiftData,
-        alignedImplementationPath
+        alignedImplementationPath,
+        confidenceThreshold
+      );
+      // Override transformation flag since we're doing dimension matching, not shift compensation
+      result.transformationApplied = (result.paddingApplied || false) || (result.croppingApplied || false);
+    } else {
+      // Apply design-centric transformation with shift compensation
+      result = await this.transformImplementationToDesignSpace(
+        designImagePath,
+        implementationImagePath,
+        shiftData,
+        alignedImplementationPath,
+        confidenceThreshold
       );
     }
 
@@ -382,7 +380,8 @@ except Exception as e:
     designImagePath: string,
     implementationImagePath: string,
     shiftData: MultiMethodAnalysis,
-    outputPath: string
+    outputPath: string,
+    confidenceThreshold: number = 0.7
   ): Promise<DesignCentricAlignmentResult> {
     const designDimensions = await this.getImageDimensions(designImagePath);
     const primaryResult = shiftData.primary_result;
@@ -394,18 +393,26 @@ import cv2
 import numpy as np
 import json
 
-def transform_implementation_to_design_space(impl_img, design_w, design_h, dx, dy, padding_color):
-    """Transform implementation to design coordinate space"""
+def transform_implementation_to_design_space(impl_img, design_w, design_h, dx, dy, padding_color, confidence, confidence_threshold):
+    """Transform implementation to design coordinate space with confidence-based placement"""
     impl_h, impl_w = impl_img.shape[:2]
     
     # Create canvas at design dimensions
     canvas = np.full((design_h, design_w, 3), padding_color, dtype=np.uint8)
     
-    # Calculate placement position (compensate for detected shift)
-    # If implementation was shifted dx pixels right relative to design,
-    # we place it dx pixels left to align it properly
-    place_x = -dx if dx != 0 else 0
-    place_y = -dy if dy != 0 else 0
+    # Calculate placement position based on confidence
+    if confidence > confidence_threshold:
+        # High confidence: Apply shift compensation
+        # If implementation was detected as shifted dx pixels right relative to design,
+        # we need to place it -dx pixels (left) to compensate and align it properly
+        place_x = -dx
+        place_y = -dy
+        use_confidence_placement = True
+    else:
+        # Low confidence: Use center-based placement
+        place_x = (design_w - impl_w) // 2
+        place_y = (design_h - impl_h) // 2
+        use_confidence_placement = False
     
     # Calculate the region to copy from implementation
     src_x_start = max(0, -place_x)
@@ -423,7 +430,7 @@ def transform_implementation_to_design_space(impl_img, design_w, design_h, dx, d
     if dst_x_end <= design_w and dst_y_end <= design_h and src_x_end > src_x_start and src_y_end > src_y_start:
         canvas[dst_y_start:dst_y_end, dst_x_start:dst_x_end] = impl_img[src_y_start:src_y_end, src_x_start:src_x_end]
     
-    return canvas
+    return canvas, use_confidence_placement
 
 try:
     design_path = "${designImagePath}"
@@ -431,6 +438,8 @@ try:
     output_path = "${outputPath}"
     dx = ${dx}
     dy = ${dy}
+    confidence = ${primaryResult.confidence || 0}
+    confidence_threshold = ${confidenceThreshold}
     padding_color = [${this.paddingColor.join(', ')}]
     
     # Load images
@@ -446,8 +455,8 @@ try:
     impl_h, impl_w = impl_img.shape[:2]
     
     # Transform implementation to design space
-    transformed_impl = transform_implementation_to_design_space(
-        impl_img, design_w, design_h, dx, dy, padding_color
+    transformed_impl, confidence_based_placement = transform_implementation_to_design_space(
+        impl_img, design_w, design_h, dx, dy, padding_color, confidence, confidence_threshold
     )
     
     # Save transformed implementation
@@ -462,7 +471,10 @@ try:
         'dx_applied': dx,
         'dy_applied': dy,
         'padding_applied': impl_w < design_w or impl_h < design_h,
-        'cropping_applied': impl_w > design_w or impl_h > design_h
+        'cropping_applied': impl_w > design_w or impl_h > design_h,
+        'confidence': confidence,
+        'confidence_threshold': confidence_threshold,
+        'confidence_based_placement': confidence_based_placement
     }
     
     print(json.dumps(result))
@@ -501,7 +513,8 @@ except Exception as e:
       shiftCompensation: {
         dx: transformResult.dx_applied,
         dy: transformResult.dy_applied
-      }
+      },
+      confidenceBasedPlacement: transformResult.confidence_based_placement
     };
   }
 

@@ -172,7 +172,8 @@ describe('Design-Centric Alignment System', () => {
         current_path: implementationImagePath,
         preserve_design: true,
         design_image_first: true,
-        implementation_transforms_only: true
+        implementation_transforms_only: true,
+        confidence_threshold: 0.8  // Test custom confidence threshold
       });
       
       // Design should be preserved at full resolution

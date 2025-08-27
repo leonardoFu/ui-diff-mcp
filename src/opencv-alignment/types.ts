@@ -72,6 +72,7 @@ export interface AlignmentResult {
 export interface AlignmentStrategy {
   preserveDesign: boolean;        // Never crop design image
   designImageIndex: 0 | 1;        // Which image is the design (0 = first, 1 = second)
+  confidenceThreshold?: number;   // Threshold for applying shift compensation (default: 0.7)
 }
 
 export interface DesignCentricAlignmentResult {
@@ -93,6 +94,7 @@ export interface DesignCentricAlignmentResult {
     dx: number;
     dy: number;
   };
+  confidenceBasedPlacement?: boolean; // True if high confidence shift compensation was used
 }
 
 export interface EnhancedDiffResult {

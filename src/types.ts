@@ -62,7 +62,12 @@ export const ComputeDiffWithAlignmentInputSchema = z.object({
   alignment_method: z.enum(['auto', 'phase_correlation', 'ecc', 'feature_matching']).default('auto'),
   pixelmatch_threshold: z.number().min(0).max(1).default(0.1),
   min_region_area: z.number().int().min(0).default(64),
-  disable_alignment: z.boolean().default(false)
+  disable_alignment: z.boolean().default(false),
+  // Design-centric alignment parameters
+  preserve_design: z.boolean().default(true),
+  design_image_first: z.boolean().default(true),
+  implementation_transforms_only: z.boolean().default(true),
+  confidence_threshold: z.number().min(0).max(1).default(0.7)
 });
 
 // TypeScript types

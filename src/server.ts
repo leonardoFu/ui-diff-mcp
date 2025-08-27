@@ -121,7 +121,7 @@ export function createServer(): Server {
         },
         {
           name: 'compute_diff_with_alignment',
-          description: 'Enhanced UI diff comparison with OpenCV global shift detection and automatic image alignment. Handles images of different sizes and positions.',
+          description: 'Enhanced UI diff comparison with OpenCV global shift detection and automatic image alignment. Handles images of different sizes and positions with design-centric alignment.',
           inputSchema: {
             type: 'object',
             properties: {
@@ -156,6 +156,28 @@ export function createServer(): Server {
                 type: 'boolean',
                 default: false,
                 description: 'Disable alignment preprocessing (use for identical-sized images)'
+              },
+              preserve_design: {
+                type: 'boolean',
+                default: true,
+                description: 'Never crop the design image - transform implementation to match design dimensions'
+              },
+              design_image_first: {
+                type: 'boolean',
+                default: true,
+                description: 'True if target_path is the design image, false if current_path is the design'
+              },
+              implementation_transforms_only: {
+                type: 'boolean',
+                default: true,
+                description: 'Only transform the implementation image, never modify the design'
+              },
+              confidence_threshold: {
+                type: 'number',
+                minimum: 0,
+                maximum: 1,
+                default: 0.7,
+                description: 'Confidence threshold for applying shift compensation (lower confidence uses center placement)'
               }
             },
             required: ['target_path', 'current_path']

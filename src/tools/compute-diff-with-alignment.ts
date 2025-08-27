@@ -41,6 +41,13 @@ export interface ComputeDiffWithAlignmentInput {
    * When false, both images may be modified (legacy behavior)
    */
   implementation_transforms_only?: boolean;
+  
+  /**
+   * Confidence threshold for applying shift compensation (default: 0.7)
+   * Shift compensation is only applied when detection confidence is above this threshold
+   * Lower confidence uses center-based placement for stability
+   */
+  confidence_threshold?: number;
 }
 
 /**
@@ -120,7 +127,8 @@ export async function computeDiffWithAlignment(
     // NEW: Design-centric alignment parameters
     preserve_design = true,
     design_image_first = true,
-    implementation_transforms_only = true
+    implementation_transforms_only = true,
+    confidence_threshold = 0.7
   } = input;
 
   try {
@@ -162,7 +170,8 @@ export async function computeDiffWithAlignment(
           shiftAnalysis,
           {
             preserveDesign: preserve_design,
-            designImageIndex: design_image_first ? 0 : 1
+            designImageIndex: design_image_first ? 0 : 1,
+            confidenceThreshold: confidence_threshold
           }
         );
 
