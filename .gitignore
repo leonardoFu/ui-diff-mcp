@@ -14,3 +14,18 @@ test-images-overlay/
 *.jpg
 *.jpeg
 vmaf_*.json
+
+# Temporary demo and test scripts
+demo-*.js
+simple-demo.js
+
+# Temporary reports and documentation
+*_VALIDATION_REPORT.md
+*_FIX_SUMMARY.md
+*_TEST_REPORT.md
+FUNCTIONAL_TEST_REPORT.md
+DESIGN_*.md
+
+# Generated data files
+regions.json
+*.regions.json

@@ -12,11 +12,92 @@ Based on the [DeltaVision investigation document](docs/deltavision-ssim-psnr-vma
 - **⚡ Fast Processing**: FFmpeg-based implementation for performance
 - **🔧 Flexible**: Configurable thresholds and minimum area filters
 
+## Workflow
+
+The UI Diff MCP Server provides an intelligent workflow for comparing design mockups against implementation screenshots:
+
+### 🔄 **Core Workflow: Alignment + Comparison**
+
+```mermaid
+graph TD
+    A[Input: Design + Implementation Images] --> B[Dimension Check]
+    B --> C{Dimensions Match?}
+    C -->|No| D[Layout Shift Detection]
+    C -->|Yes| H[Direct Comparison]
+    D --> E[Multi-Algorithm Analysis]
+    E --> F[Apply Alignment Transform]
+    F --> G[Normalize to Design Canvas]
+    G --> H[SSIM/PSNR/VMAF Comparison]
+    H --> I[Region Detection]
+    I --> J[Generate Visual Artifacts]
+    J --> K[Output: Metrics + Regions + Overlays]
+```
+
+### 🎯 **Alignment-First Philosophy**
+
+1. **Dimension Analysis**: Check if images have matching dimensions
+2. **Layout Shift Detection**: Use 3 algorithms for robust shift detection:
+   - **Phase Correlation**: Fast frequency-domain translation detection
+   - **ECC Registration**: Enhanced correlation coefficient for affine transforms  
+   - **Feature Matching**: SIFT/ORB features for complex transformations
+3. **Smart Alignment**: Apply inverse transformation to align implementation to design space
+4. **Accurate Comparison**: Compute metrics on properly aligned images
+
+### 🧮 **Multi-Algorithm Confidence**
+
+The system automatically selects the best alignment method based on confidence scores:
+- **High Confidence (>90%)**: Precise alignment with sub-pixel accuracy
+- **Medium Confidence (40-90%)**: Reliable alignment with minor adjustments  
+- **Low Confidence (<40%)**: Fallback to simpler methods or manual review
+
 ## Tools
+
+### `compute_diff_with_alignment`
+
+**Primary tool** - Complete workflow with automatic alignment and comparison.
+
+**Input:**
+```typescript
+{
+  target_path: string,              // Design/reference image path
+  current_path: string,             // Implementation image path
+  alignment_method?: string,        // "auto", "phase_correlation", "ecc", "feature_matching"
+  preserve_design?: boolean,        // Keep design unchanged (default: true)
+  design_is_target?: boolean,       // Target is design reference (default: true)
+  threshold?: number,               // Pixelmatch threshold (default: 0.1)
+  min_region_area?: number         // Min region area in pixels (default: 64)
+}
+```
+
+**Output:**
+```json
+{
+  "canvas": {"w": 1616, "h": 310},
+  "alignment": {
+    "shift_detection": {
+      "primary_result": {
+        "dx": -6.0, "dy": -24.0, "confidence": 0.996, 
+        "scale": 1.002, "rotation_deg": 0.002, "method": "ecc_registration"
+      },
+      "recommendation": {"action": "minor_alignment", "reason": "Minor shift detected"}
+    },
+    "preprocessing_applied": true,
+    "design_preserved": true
+  },
+  "pixelmatch": {"total_pixels": 500960, "diff_pixels": 0, "percentage": 0},
+  "ffmpeg_metrics": {"ssim_avg": 1.0, "psnr": 100, "vmaf": 1.000002},
+  "artifacts": {
+    "aligned_implementation_path": "aligned_implementation_*.png",
+    "pixelmatch_diff_path": "pixelmatch_diff_*.png", 
+    "overlay_path": "overlay_*.png"
+  },
+  "regions": []
+}
+```
 
 ### `compute_diff_regions`
 
-Computes difference regions between target (design) and current (implementation) images.
+Legacy tool - Direct region comparison without alignment.
 
 **Input:**
 ```typescript
@@ -28,21 +109,9 @@ Computes difference regions between target (design) and current (implementation)
 }
 ```
 
-**Output:**
-```json
-{
-  "canvas": {"w": 1440, "h": 900},
-  "regions": [
-    {"id":"r1","bbox":[960,72,240,48],"score":0.78,"max":0.91,"area_px":11520}
-  ],
-  "metrics": {"psnr": 31.8, "ssim_avg": 0.947},
-  "artifacts": {"heatmap_path":"diff_heatmap.png"}
-}
-```
-
 ### `score_global`
 
-Computes global similarity scores between two images.
+Direct similarity scoring without alignment.
 
 **Input:**
 ```typescript
@@ -52,18 +121,9 @@ Computes global similarity scores between two images.
 }
 ```
 
-**Output:**
-```json
-{
-  "vmaf": 92.5,
-  "ssim_avg": 0.947, 
-  "psnr": 31.8
-}
-```
-
 ### `render_overlay`
 
-Renders overlay visualization with highlighted difference regions.
+Generate visual overlay from existing regions.
 
 **Input:**
 ```typescript
@@ -71,11 +131,6 @@ Renders overlay visualization with highlighted difference regions.
   current_path: string,
   regions: Region[]  // From compute_diff_regions output
 }
-```
-
-**Output:**
-```
-"path/to/overlay_image.png"
 ```
 
 ## Installation
