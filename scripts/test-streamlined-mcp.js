@@ -5,7 +5,7 @@
  */
 
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';
-import { createServer } from './dist/server.js';
+import { createServer } from '../dist/server.js';
 
 async function testStreamlinedMCP() {
   console.log('🧪 Testing Streamlined MCP Server...\n');

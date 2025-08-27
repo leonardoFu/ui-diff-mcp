@@ -1,4 +1,4 @@
-import { computeDiffWithAlignment } from './dist/tools/compute-diff-with-alignment.js';
+import { computeDiffWithAlignment } from '../dist/tools/compute-diff-with-alignment.js';
 
 console.log('🔄 COMPREHENSIVE REGRESSION TEST');
 console.log('===============================');

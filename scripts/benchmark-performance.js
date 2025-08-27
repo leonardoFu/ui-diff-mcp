@@ -5,8 +5,8 @@
  */
 
 import { promises as fs } from 'fs';
-import { OpenCVGlobalShiftDetector } from './dist/opencv-alignment/opencv-detector.js';
-import { ImageAligner } from './dist/opencv-alignment/image-aligner.js';
+import { OpenCVGlobalShiftDetector } from '../dist/opencv-alignment/opencv-detector.js';
+import { ImageAligner } from '../dist/opencv-alignment/image-aligner.js';
 import sharp from 'sharp';
 
 console.log('🎯 PERFORMANCE BENCHMARKING - OpenCV Global Shift Detection System');

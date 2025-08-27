@@ -1,5 +1,5 @@
-import { computeDiffWithAlignment } from './dist/tools/compute-diff-with-alignment.js';
-import { createServer } from './dist/server.js';
+import { computeDiffWithAlignment } from '../dist/tools/compute-diff-with-alignment.js';
+import { createServer } from '../dist/server.js';
 
 async function runComprehensiveTests() {
   console.log('🧪 COMPREHENSIVE ALIGNMENT FIX TESTING');

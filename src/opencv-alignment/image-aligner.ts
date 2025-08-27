@@ -409,9 +409,9 @@ def transform_implementation_to_design_space(impl_img, design_w, design_h, dx, d
         place_y = -dy
         use_confidence_placement = True
     else:
-        # Low confidence: Use center-based placement
-        place_x = (design_w - impl_w) // 2
-        place_y = (design_h - impl_h) // 2
+        # Low confidence: Use top-left placement
+        place_x = 0
+        place_y = 0
         use_confidence_placement = False
     
     # Calculate the region to copy from implementation

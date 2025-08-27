@@ -4,8 +4,8 @@
  * Real-World Validation Testing for OpenCV Global Shift Detection System
  */
 
-import { computeDiffRegions } from './dist/tools/compute-diff-regions.js';
-import { scoreGlobal } from './dist/tools/score-global.js';
+import { computeDiffRegions } from '../dist/tools/compute-diff-regions.js';
+import { scoreGlobal } from '../dist/tools/score-global.js';
 
 console.log('🌍 REAL-WORLD VALIDATION TESTING');
 console.log('================================');

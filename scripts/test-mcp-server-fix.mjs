@@ -1,4 +1,4 @@
-import { createServer } from './dist/server.js';
+import { createServer } from '../dist/server.js';
 
 async function testMCPServer() {
   console.log('🔌 Testing MCP Server Interface');

@@ -1,4 +1,4 @@
-import { computeDiffWithAlignment } from './dist/tools/compute-diff-with-alignment.js';
+import { computeDiffWithAlignment } from '../dist/tools/compute-diff-with-alignment.js';
 
 async function testMcpConfidenceParameter() {
   try {
