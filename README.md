@@ -135,72 +135,233 @@ Generate visual overlay from existing regions.
 
 ## Installation
 
+### Prerequisites
+
+Before installing, ensure you have the required dependencies:
+
+- **Node.js** 18+ 
+- **FFmpeg** with libvmaf support (required for VMAF metrics)
+
+#### Installing FFmpeg
+
 ```bash
+# macOS (with Homebrew)
+brew install ffmpeg
+
+# Ubuntu/Debian
+sudo apt-get update
+sudo apt-get install ffmpeg
+
+# Windows (with Chocolatey)
+choco install ffmpeg
+
+# Verify FFmpeg installation
+ffmpeg -version
+```
+
+### Install UI Diff MCP
+
+#### Option 1: From Source (Recommended)
+
+```bash
+# Clone the repository
+git clone <repository-url>
+cd ui-diff-mcp
+
+# Install dependencies
 npm install
+
+# Build the project
 npm run build
+
+# Optional: Run tests to verify installation
+npm test
+```
+
+#### Option 2: Install from NPM (when published)
+
+```bash
+npm install -g ui-diff-mcp
 ```
 
 ## Usage
 
 ### As MCP Server
 
-Add to your MCP client configuration:
+#### Claude Desktop Configuration
+
+Add the server to your Claude Desktop configuration file:
+
+**Location:** 
+- **macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
+- **Windows**: `%APPDATA%/Claude/claude_desktop_config.json`
 
 ```json
 {
   "mcpServers": {
     "ui-diff": {
       "command": "node",
-      "args": ["/path/to/ui-diff-mcp/dist/index.js"]
+      "args": ["/absolute/path/to/ui-diff-mcp/dist/index.js"],
+      "env": {}
     }
   }
 }
 ```
 
-### Direct Usage
+#### Other MCP Clients
+
+For other MCP-compatible clients, use the provided configuration example:
+
+```bash
+# Copy the example configuration
+cp mcp-config-example.json your-mcp-config.json
+
+# Edit the file to match your setup
+# Update the path in args to point to your installation
+```
+
+#### Quick Start
+
+After installation and configuration:
+
+1. **Restart Claude Desktop** to load the new MCP server
+2. **Verify installation** by asking Claude: "List available MCP tools"
+3. **Test with sample images**:
+   ```
+   Compare design.png and implementation.png using compute_diff_with_alignment
+   ```
+
+### MCP Tool Usage Examples
+
+Once configured as an MCP server, you can use these tools through your MCP client:
+
+#### Basic Comparison
+```
+Use compute_diff_with_alignment to compare:
+- target_path: "./design.png" 
+- current_path: "./implementation.png"
+```
+
+#### Advanced Comparison with Custom Settings
+```
+Use compute_diff_with_alignment to compare images with:
+- target_path: "./design.png"
+- current_path: "./implementation.png"  
+- alignment_method: "phase_correlation"
+- threshold: 0.05
+- min_region_area: 100
+```
+
+#### Legacy Region Detection
+```
+Use compute_diff_regions to find differences between:
+- target_path: "./design.png"
+- current_path: "./implementation.png"
+- threshold: 0.1
+```
+
+### Direct Usage (Programmatic)
+
+If using as a Node.js library:
 
 ```typescript
 import { computeDiffRegions, scoreGlobal, renderOverlay } from 'ui-diff-mcp';
 
-// Analyze differences
-const result = await computeDiffRegions({
+// Analyze differences with alignment
+const result = await computeDiffWithAlignment({
   target_path: './design.png',
   current_path: './implementation.png',
+  alignment_method: 'auto',
   threshold: 0.1,
-  min_area_px: 100
+  min_region_area: 100
 });
 
-// Get global scores  
+// Get global similarity scores
 const scores = await scoreGlobal({
   target_path: './design.png', 
   current_path: './implementation.png'
 });
 
-// Create overlay visualization
+// Create visual overlay
 const overlayPath = await renderOverlay({
   current_path: './implementation.png',
   regions: result.regions
 });
 ```
 
-## Requirements
-
-- **Node.js** 18+
-- **FFmpeg** with libvmaf support (for VMAF metrics)
-  ```bash
-  # macOS
-  brew install ffmpeg
-  
-  # Linux
-  apt-get install ffmpeg
-  ```
-
 ## Testing
 
 ```bash
-npm test          # Run all tests
-npm run test:watch # Watch mode for development
+# Run all tests
+npm test
+
+# Watch mode for development
+npm run test:watch
+
+# Clean test artifacts
+npm run test:clean
+
+# Run build and test together
+npm run build && npm test
 ```
+
+## Troubleshooting
+
+### Common Issues
+
+#### MCP Server Not Found
+- **Issue**: Claude Desktop can't find the UI Diff server
+- **Solution**: 
+  1. Verify the path in `claude_desktop_config.json` is absolute
+  2. Check that `dist/index.js` exists after running `npm run build`
+  3. Restart Claude Desktop after configuration changes
+
+#### FFmpeg Not Found
+- **Issue**: VMAF metrics fail with "FFmpeg not found"
+- **Solution**:
+  ```bash
+  # Verify FFmpeg is installed and accessible
+  which ffmpeg
+  ffmpeg -version
+  
+  # If not installed, install FFmpeg (see Prerequisites)
+  ```
+
+#### Permission Errors
+- **Issue**: Permission denied when accessing images
+- **Solution**: Ensure image files have read permissions:
+  ```bash
+  chmod +r design.png implementation.png
+  ```
+
+#### Module Resolution Errors
+- **Issue**: TypeScript/Node.js import errors
+- **Solution**:
+  ```bash
+  # Clean and rebuild
+  npm run clean
+  npm install
+  npm run build
+  ```
+
+### Debug Mode
+
+Enable verbose logging by setting environment variables:
+
+```bash
+# For MCP server debugging
+DEBUG=ui-diff:* node dist/index.js
+
+# For development
+npm run dev
+```
+
+### Getting Help
+
+1. Check the [issues page](../../issues) for known problems
+2. Verify your installation matches the requirements
+3. Test with the provided sample images in the test directory
+4. Create a minimal reproduction case when reporting bugs
 
 ## Development
 
