@@ -31,7 +31,10 @@ Examples:
           target_path: target,
           current_path: current,
           threshold: threshold ? parseFloat(threshold) : 0.1,
-          min_area_px: minArea ? parseInt(minArea) : 64
+          min_area_px: minArea ? parseInt(minArea) : 64,
+          max_regions: 20,
+          merge_score_threshold: 0.05,
+          merge_distance_threshold: 50
         });
         
         console.log(JSON.stringify(result, null, 2));

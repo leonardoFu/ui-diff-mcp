@@ -20,6 +20,11 @@ export interface ComputeDiffWithAlignmentInput {
   min_region_area?: number;
   disable_alignment?: boolean;
   
+  // Region merging options
+  max_regions?: number;
+  merge_score_threshold?: number;
+  merge_distance_threshold?: number;
+  
   // NEW: Design-centric alignment parameters
   /** 
    * Never crop the design image (default: true) 
@@ -128,7 +133,11 @@ export async function computeDiffWithAlignment(
     preserve_design = true,
     design_image_first = true,
     implementation_transforms_only = true,
-    confidence_threshold = 0.7
+    confidence_threshold = 0.7,
+    // Region merging options
+    max_regions = 20,
+    merge_score_threshold = 0.05,
+    merge_distance_threshold = 50
   } = input;
 
   try {
@@ -225,7 +234,10 @@ export async function computeDiffWithAlignment(
       target_path: alignedTargetPath,
       current_path: alignedCurrentPath,
       threshold: 0.0,
-      min_area_px: min_region_area
+      min_area_px: min_region_area,
+      max_regions,
+      merge_score_threshold,
+      merge_distance_threshold
     });
 
     // Step 7: Create overlay visualization

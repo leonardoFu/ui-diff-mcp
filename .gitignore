@@ -10,7 +10,6 @@ dist/
 test-artifacts/
 test-images/
 test-images-overlay/
-*.png
 *.jpg
 *.jpeg
 vmaf_*.json

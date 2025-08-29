@@ -43,7 +43,11 @@ export const ComputeDiffRegionsInputSchema = z.object({
   target_path: z.string(),
   current_path: z.string(),
   threshold: z.number().min(0).max(1).default(0.0),
-  min_area_px: z.number().int().min(0).default(64)
+  min_area_px: z.number().int().min(0).default(64),
+  // Region merging options
+  max_regions: z.number().int().min(1).default(20),
+  merge_score_threshold: z.number().min(0).max(1).default(0.05),
+  merge_distance_threshold: z.number().min(0).default(50)
 });
 
 export const ScoreGlobalInputSchema = z.object({
@@ -53,6 +57,12 @@ export const ScoreGlobalInputSchema = z.object({
 
 export const RenderOverlayInputSchema = z.object({
   current_path: z.string(),
+  regions: z.array(RegionSchema)
+});
+
+export const HeatmapOverlayInputSchema = z.object({
+  heatmap_path: z.string(),
+  target_path: z.string(),
   regions: z.array(RegionSchema)
 });
 
@@ -67,7 +77,11 @@ export const ComputeDiffWithAlignmentInputSchema = z.object({
   preserve_design: z.boolean().default(true),
   design_image_first: z.boolean().default(true),
   implementation_transforms_only: z.boolean().default(true),
-  confidence_threshold: z.number().min(0).max(1).default(0.7)
+  confidence_threshold: z.number().min(0).max(1).default(0.7),
+  // Region merging options
+  max_regions: z.number().int().min(1).default(20),
+  merge_score_threshold: z.number().min(0).max(1).default(0.05),
+  merge_distance_threshold: z.number().min(0).default(50)
 });
 
 // TypeScript types
@@ -80,4 +94,5 @@ export type ScoreGlobalResponse = z.infer<typeof ScoreGlobalResponseSchema>;
 export type ComputeDiffRegionsInput = z.infer<typeof ComputeDiffRegionsInputSchema>;
 export type ScoreGlobalInput = z.infer<typeof ScoreGlobalInputSchema>;
 export type RenderOverlayInput = z.infer<typeof RenderOverlayInputSchema>;
+export type HeatmapOverlayInput = z.infer<typeof HeatmapOverlayInputSchema>;
 export type ComputeDiffWithAlignmentInput = z.infer<typeof ComputeDiffWithAlignmentInputSchema>;
